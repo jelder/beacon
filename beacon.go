@@ -51,11 +51,11 @@ func track(objectId string, uid string) {
 
 	// Track the number of unique visitors in a HyperLogLog
 	// http://redis.io/commands/pfadd
-	conn.Send("PFADD", "hll_" + objectId, uid)
+	conn.Send("PFADD", "hll_"+objectId, uid)
 
 	// Track the total number of visits in a simple key (stringy)
 	// http://redis.io/commands/incr
-	conn.Send("INCR", "str_" + objectId)
+	conn.Send("INCR", "str_"+objectId)
 
 	_, err := conn.Do("EXEC")
 	if err != nil {
@@ -112,8 +112,8 @@ func apiGetHandler(w http.ResponseWriter, req *http.Request) {
 	log.Print("Object ID: ", objectId)
 	conn := pool.Get()
 	defer conn.Close()
-	visits, _ := redis.Int64(conn.Do("GET", "str_" + objectId))
-	uniques, _ := redis.Int64(conn.Do("PFCOUNT", "hll_" + objectId))
+	visits, _ := redis.Int64(conn.Do("GET", "str_"+objectId))
+	uniques, _ := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectId))
 	apiResponse := ApiResponse{Visits: visits, Uniques: uniques}
 	js, err := json.Marshal(apiResponse)
 	if err != nil {
