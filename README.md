@@ -7,13 +7,12 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 var image = new Image(1,1);
 url = "//beacon.example.com/beacon.png" + "myTrackingId" 
 image.src = url;
-}
 ```
 
 ```json
 {
-  visits: 14,
-  uniques: 4
+  "visits": 14,
+  "uniques": 4
 }
 ```
 
