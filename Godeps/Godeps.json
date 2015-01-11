@@ -1,0 +1,18 @@
+{
+	"ImportPath": "github.com/jelder/beacon",
+	"GoVersion": "go1.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/dchest/uniuri",
+			"Rev": "dc985c3409977cc7670dc2043f31d60bea764a51"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/internal",
+			"Rev": "61e2910408efd40dafb3c7d856a4cf8aeb5fb1c6"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/redis",
+			"Rev": "61e2910408efd40dafb3c7d856a4cf8aeb5fb1c6"
+		}
+	]
+}
