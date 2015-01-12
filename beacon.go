@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/codegangsta/negroni"
 	"github.com/dchest/uniuri"
 	"github.com/garyburd/redigo/redis"
+	"github.com/rs/cors"
 	"log"
 	"net/http"
 	"net/url"
@@ -194,16 +196,20 @@ var (
 
 func main() {
 	redisServer, redisPassword := redisConfig()
-	log.Print(redisServer, redisPassword)
+	log.Print("Connecting to Redis on ", redisServer, redisPassword)
 	pool = newPool(redisServer, redisPassword)
 
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/beacon.png", beaconHandler)
-	http.HandleFunc("/api/", apiHandler)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/beacon.png", beaconHandler)
+	mux.HandleFunc("/api/", apiHandler)
 
-	log.Print("Listening on ", listenAddress())
-	err := http.ListenAndServe(listenAddress(), nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+	})
+
+	n := negroni.Classic()
+	n.Use(c)
+	n.UseHandler(mux)
+	n.Run(listenAddress())
 }
