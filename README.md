@@ -5,11 +5,11 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 
 ```javascript
 var image = new Image(1,1);
-url = "//beacon.example.com/beacon.png?id=" + "myTrackingId" 
+url = "//beacon.herokuapp.com/beacon.png?id=" + "myTrackingId" 
 image.src = url;
 ```
 
-See the results at http://beacon.example.com/api/myTrackingId, which supports CORS.
+See the results at https://beacon.herokuapp.com/api/myTrackingId, which supports CORS.
 ```json
 {
   "visits": 14,
