@@ -9,7 +9,7 @@ url = "//beacon.example.com/beacon.png?id=" + "myTrackingId"
 image.src = url;
 ```
 
-`GET http://beacon.example.com/api/myTrackingId`
+See the results at http://beacon.example.com/api/myTrackingId, which supports CORS.
 ```json
 {
   "visits": 14,
