@@ -1,1 +1,1 @@
-web: go run beacon.go
+web: beacon

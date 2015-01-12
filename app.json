@@ -1,0 +1,20 @@
+{
+  "name": "Beacon",
+  "description": "A tiny subset of Google Analytics, in Go.",
+  "keywords": [
+    "hyperloglog",
+    "redis",
+    "go",
+    "beacon",
+    "analytics"
+  ],
+  "website": "http://github.com/jelder/beacon",
+  "repository": "http://github.com/jelder/beacon",
+  "scripts": {},
+  "env": {
+    "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-go"
+  },
+  "addons": [
+    "redistogo"
+  ]
+}
