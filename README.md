@@ -1,6 +1,8 @@
 # beacon
 A tiny subset of Google Analytics, in Go.
 
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
 Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your own servers and with a simple read-only API.
 
 ```javascript
