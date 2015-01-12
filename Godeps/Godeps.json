@@ -28,6 +28,10 @@
 			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
 		},
 		{
+			"ImportPath": "github.com/mholt/binding",
+			"Rev": "6c082304f300fc70793cb0be18af0fdd4acd2b75"
+		},
+		{
 			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
 			"Rev": "48f82605778a579cb8172122897f589e4023b537"
 		},
