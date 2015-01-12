@@ -7,6 +7,7 @@ import (
 	"github.com/codegangsta/negroni"
 	"github.com/dchest/uniuri"
 	"github.com/garyburd/redigo/redis"
+	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/rs/cors"
 	"log"
 	"net/http"
@@ -209,6 +210,7 @@ func main() {
 	})
 
 	n := negroni.Classic()
+	n.Use(gzip.Gzip(gzip.DefaultCompression))
 	n.Use(c)
 	n.UseHandler(mux)
 	n.Run(listenAddress())
