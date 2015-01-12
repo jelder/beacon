@@ -103,15 +103,31 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 	objectId := vars["objectId"]
 	conn := pool.Get()
 	defer conn.Close()
-	visits, _ := redis.Int64(conn.Do("GET", "str_"+objectId))
-	uniques, _ := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectId))
-	apiResponse := TrackJson{Visits: visits, Uniques: uniques}
-	js, err := json.Marshal(apiResponse)
+
+	uniques, err := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectId))
 	if err != nil {
 		log.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	var migrated_visits, migrated_uniques, visits int64
+	mget, err := redis.Values(conn.Do("MGET", "visits_"+objectId, "uniques_"+objectId, "str_"+objectId))
+	if err != nil {
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if _, err := redis.Scan(mget, &migrated_visits, &migrated_uniques, &visits); err != nil {
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	visits += migrated_visits
+	uniques += migrated_uniques
+
+	apiResponse := TrackJson{Visits: visits, Uniques: uniques}
+	js, _ := json.Marshal(apiResponse)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
@@ -121,7 +137,7 @@ func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
 	objectId := vars["objectId"]
 	trackJson := new(TrackJson)
 	if binding.Bind(req, trackJson).Handle(w) {
-	    return
+		return
 	}
 	fmt.Sprintf("%q\n", trackJson)
 	conn := pool.Get()
