@@ -9,11 +9,11 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/rs/cors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"strings"
 	"time"
 )
@@ -24,6 +24,19 @@ type ApiResponse struct {
 }
 
 const cookieMaxAge = 60 * 60 * 60 * 24 * 30
+
+var (
+	pool *redis.Pool
+	png  = mustReadFile("assets/beacon.png")
+)
+
+func mustReadFile(path string) []byte {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
 
 func uid(w http.ResponseWriter, req *http.Request) string {
 	cookie, err := req.Cookie("uid")
@@ -73,28 +86,8 @@ func beaconHandler(w http.ResponseWriter, req *http.Request) {
 	if objectId != "" {
 		go track(objectId, uid(w, req))
 	}
-	http.ServeFile(w, req, path.Join("images", "beacon.png"))
-}
-
-func indexHandler(w http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Method, req.URL)
-	if req.URL.Path == "/" {
-		http.ServeFile(w, req, path.Join("index.html"))
-	} else {
-		http.NotFound(w, req)
-	}
-}
-
-func apiHandler(w http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Method, req.URL)
-	switch req.Method {
-	case "GET":
-		apiGetHandler(w, req)
-	case "POST":
-		apiPostHandler(w, req)
-	default:
-		http.Error(w, "Expected GET or POST", http.StatusMethodNotAllowed)
-	}
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(png)
 }
 
 func apiObjectId(path string) (string, error) {
@@ -106,7 +99,7 @@ func apiObjectId(path string) (string, error) {
 	return elements[2], nil
 }
 
-func apiGetHandler(w http.ResponseWriter, req *http.Request) {
+func apiHandler(w http.ResponseWriter, req *http.Request) {
 	objectId, err := apiObjectId(req.URL.Path)
 	if err != nil {
 		http.Error(w, "Not Found", http.StatusNotFound)
@@ -125,15 +118,6 @@ func apiGetHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
-}
-
-// TODO support for backfilling values
-func apiPostHandler(w http.ResponseWriter, req *http.Request) {
-	objectId, err := apiObjectId(req.URL.Path)
-	if err != nil {
-		http.Error(w, "Not Found", http.StatusNotFound)
-	}
-	log.Print("Object ID: ", objectId)
 }
 
 func listenAddress() string {
@@ -191,17 +175,15 @@ func newPool(server, password string) *redis.Pool {
 	}
 }
 
-var (
-	pool *redis.Pool
-)
-
 func main() {
 	redisServer, redisPassword := redisConfig()
 	log.Print("Connecting to Redis on ", redisServer, redisPassword)
 	pool = newPool(redisServer, redisPassword)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		http.Redirect(w, req, "https://www.github.com/jelder/beacon", 302)
+	})
 	mux.HandleFunc("/beacon.png", beaconHandler)
 	mux.HandleFunc("/api/", apiHandler)
 
