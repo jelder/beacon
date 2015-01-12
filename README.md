@@ -29,4 +29,4 @@ There is an invisible image above this line, though GitHub's Markdown may mess w
 
 ## Thanks
 
-This app uses the smallest possible 1x1 transparent PNG, thanks to the awesome work by [](http://garethrees.org/2007/11/14/pngcrush/).
+This app uses the smallest possible 1x1 transparent PNG, thanks to the awesome work by [Gareth Rees](http://garethrees.org/2007/11/14/pngcrush/).
