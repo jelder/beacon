@@ -3,6 +3,11 @@
 	"GoVersion": "go1.2",
 	"Deps": [
 		{
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Comment": "v0.1-55-g1dd3ab0",
+			"Rev": "1dd3ab0ff59e13f5b73dcbf70703710aebe50d2f"
+		},
+		{
 			"ImportPath": "github.com/dchest/uniuri",
 			"Rev": "dc985c3409977cc7670dc2043f31d60bea764a51"
 		},
@@ -13,6 +18,14 @@
 		{
 			"ImportPath": "github.com/garyburd/redigo/redis",
 			"Rev": "61e2910408efd40dafb3c7d856a4cf8aeb5fb1c6"
+		},
+		{
+			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
+			"Rev": "48f82605778a579cb8172122897f589e4023b537"
+		},
+		{
+			"ImportPath": "github.com/rs/cors",
+			"Rev": "abddb2fca308f1d4a4ab6350ba89b3785613f774"
 		}
 	]
 }
