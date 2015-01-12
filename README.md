@@ -5,10 +5,11 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 
 ```javascript
 var image = new Image(1,1);
-url = "//beacon.example.com/beacon.png" + "myTrackingId" 
+url = "//beacon.example.com/beacon.png?id=" + "myTrackingId" 
 image.src = url;
 ```
 
+`GET http://beacon.example.com/api/myTrackingId`
 ```json
 {
   "visits": 14,
@@ -17,3 +18,5 @@ image.src = url;
 ```
 
 Data is stored in Redis using HyperLogLog for uniques.
+
+![&nbsp](https://beacon.herokuapp.com/beacon.png?id=beacon_github_repo)
