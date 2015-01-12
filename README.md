@@ -1,7 +1,7 @@
 # beacon
 A tiny subset of Google Analytics, in Go.
 
-Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your own servers and with a simple API. Data is stored in Redis using HyperLogLog for uniques. It is very fast, easily handling hundreds of concurrent requests on a free Heroku instance. See the [Blitz.IO report](https://www.blitz.io/report/7a814fea9048b3a38332eed44bbfe466).
+Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your own servers and with a simple API. Data is stored in Redis using [HyperLogLog](http://en.wikipedia.org/wiki/HyperLogLog) for uniques. It is very fast, easily handling hundreds of concurrent requests on a free Heroku instance. See the [Blitz.IO report](https://www.blitz.io/report/7a814fea9048b3a38332eed44bbfe466).
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
