@@ -19,7 +19,6 @@
       "generator": "secret"
     }
   },
-  },
   "addons": [
     "rediscloud"
   ]
