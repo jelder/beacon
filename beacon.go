@@ -143,7 +143,11 @@ func listenAddress() string {
 }
 
 func redisConfig() (string, string) {
-	string := os.Getenv("OPENREDIS_URL")
+	redis_provider := os.Getenv("REDIS_PROVIDER")
+	if redis_provider == "" {
+		redis_provider = "OPENREDIS_URL"
+	}
+	string := os.Getenv(redis_provider)
 	if string != "" {
 		url, err := url.Parse(string)
 		password := ""
