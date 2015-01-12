@@ -21,4 +21,12 @@ image.src = url;
 
 Data is stored in Redis using HyperLogLog for uniques.
 
+## Demo
+
 ![&nbsp](https://beacon.herokuapp.com/beacon.png?id=beacon_github_repo)
+
+There is an invisible image above this line, though GitHub's Markdown may mess with it. See the traffic we've tracked so far here: https://beacon.herokuapp.com/api/beacon_github_repo
+
+## Thanks
+
+This app uses the smallest possible 1x1 transparent PNG, thanks to the awesome work by [](http://garethrees.org/2007/11/14/pngcrush/).
