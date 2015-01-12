@@ -20,6 +20,14 @@
 			"Rev": "61e2910408efd40dafb3c7d856a4cf8aeb5fb1c6"
 		},
 		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
+		},
+		{
 			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
 			"Rev": "48f82605778a579cb8172122897f589e4023b537"
 		},

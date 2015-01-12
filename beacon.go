@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/dchest/uniuri"
 	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/mux"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/rs/cors"
 	"io/ioutil"
@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -90,22 +89,9 @@ func beaconHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(png)
 }
 
-func apiObjectId(path string) (string, error) {
-	path = strings.TrimSuffix(path, "/")
-	elements := strings.SplitN(path, "/", 3)
-	if len(elements) != 3 {
-		return "", errors.New("Object Id not found in path")
-	}
-	return elements[2], nil
-}
-
 func apiHandler(w http.ResponseWriter, req *http.Request) {
-	objectId, err := apiObjectId(req.URL.Path)
-	if err != nil {
-		http.Error(w, "Not Found", http.StatusNotFound)
-		return
-	}
-	log.Print("Object ID: ", objectId)
+	vars := mux.Vars(req)
+	objectId := vars["objectId"]
 	conn := pool.Get()
 	defer conn.Close()
 	visits, _ := redis.Int64(conn.Do("GET", "str_"+objectId))
@@ -180,20 +166,18 @@ func main() {
 	log.Print("Connecting to Redis on ", redisServer, redisPassword)
 	pool = newPool(redisServer, redisPassword)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+	r := mux.NewRouter()
+	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		http.Redirect(w, req, "https://www.github.com/jelder/beacon", 302)
 	})
-	mux.HandleFunc("/beacon.png", beaconHandler)
-	mux.HandleFunc("/api/", apiHandler)
-
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-	})
+	r.HandleFunc("/beacon.png", beaconHandler)
+	r.HandleFunc("/api/{objectId}", apiHandler)
 
 	n := negroni.Classic()
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
-	n.Use(c)
-	n.UseHandler(mux)
+	n.Use(cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+	}))
+	n.UseHandler(r)
 	n.Run(listenAddress())
 }
