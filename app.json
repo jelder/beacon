@@ -12,9 +12,10 @@
   "repository": "http://github.com/jelder/beacon",
   "scripts": {},
   "env": {
-    "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-go"
+    "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-go",
+    "REDIS_PROVIDER": "REDISCLOUD_URL"
   },
   "addons": [
-    "redistogo"
+    "rediscloud"
   ]
 }
