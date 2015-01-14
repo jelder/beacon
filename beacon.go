@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -23,7 +24,7 @@ const cookieMaxAge = 60 * 60 * 60 * 24 * 30
 var (
 	pool   *redis.Pool
 	png    = mustReadFile("assets/beacon.png")
-	events = make(chan Event)
+	events = make(chan Event, runtime.NumCPU())
 )
 
 func mustReadFile(path string) []byte {
@@ -211,6 +212,9 @@ func newPool(server, password string) *redis.Pool {
 }
 
 func main() {
+	log.Print("Running on " + fmt.Sprintf("%d", runtime.NumCPU()) + "CPUs")
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	redisServer, redisPassword := redisConfig()
 	log.Print("Connecting to Redis on ", redisServer, redisPassword)
 	pool = newPool(redisServer, redisPassword)
