@@ -21,8 +21,9 @@ import (
 const cookieMaxAge = 60 * 60 * 60 * 24 * 30
 
 var (
-	pool *redis.Pool
-	png  = mustReadFile("assets/beacon.png")
+	pool   *redis.Pool
+	png    = mustReadFile("assets/beacon.png")
+	events = make(chan Event)
 )
 
 func mustReadFile(path string) []byte {
@@ -31,6 +32,11 @@ func mustReadFile(path string) []byte {
 		panic(err)
 	}
 	return b
+}
+
+type Event struct {
+	Object string
+	User   string
 }
 
 type TrackJson struct {
@@ -64,36 +70,36 @@ func uid(w http.ResponseWriter, req *http.Request) string {
 	return cookie.Value
 }
 
-func track(objectId string, uid string) {
-	log.Print("Tracking ", uid, " on ", objectId)
+func track() {
 	conn := pool.Get()
 	defer conn.Close()
 
-	// http://godoc.org/github.com/garyburd/redigo/redis#hdr-Pipelining
-	conn.Send("MULTI")
+	for {
+		event := <-events
+		log.Print("Tracking ", event.User, " on ", event.Object)
 
-	// Track the number of unique visitors in a HyperLogLog
-	// http://redis.io/commands/pfadd
-	conn.Send("PFADD", "hll_"+objectId, uid)
+		// http://godoc.org/github.com/garyburd/redigo/redis#hdr-Pipelining
+		conn.Send("MULTI")
 
-	// Track the total number of visits in a simple key (stringy)
-	// http://redis.io/commands/incr
-	conn.Send("INCR", "str_"+objectId)
+		// Track the number of unique visitors in a HyperLogLog
+		// http://redis.io/commands/pfadd
+		conn.Send("PFADD", "hll_"+event.Object, event.User)
 
-	_, err := conn.Do("EXEC")
-	if err != nil {
-		log.Print(err)
-		return
+		// Track the total number of visits in a simple key (stringy)
+		// http://redis.io/commands/incr
+		conn.Send("INCR", "str_"+event.Object)
+
+		_, err := conn.Do("EXEC")
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 
 func beaconHandler(w http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Method, req.URL)
-	query, _ := url.ParseQuery(req.URL.RawQuery)
-	objectId := query.Get("id")
-	if objectId != "" {
-		go track(objectId, uid(w, req))
-	}
+	vars := mux.Vars(req)
+	objectId := vars["objectId"]
+	events <- Event{objectId, uid(w, req)}
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(png)
 }
