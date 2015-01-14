@@ -7,8 +7,8 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 
 ```javascript
 var image = new Image(1,1);
-objectId = 1234
-url = "//beacon.herokuapp.com/" + objectId + ".png"
+objectId = 1234;
+url = "//beacon.herokuapp.com/" + objectId + ".png";
 image.src = url;
 ```
 
