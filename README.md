@@ -6,8 +6,8 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
 ```javascript
-var image = new Image(1,1);
 objectId = 1234;
+var image = new Image(1,1);
 url = "//beacon.herokuapp.com/" + objectId + ".png";
 image.src = url;
 ```
