@@ -24,7 +24,7 @@ const cookieMaxAge = 60 * 60 * 60 * 24 * 30
 var (
 	pool    *redis.Pool
 	png     = mustReadFile("assets/beacon.png")
-	events  = make(chan Event, runtime.NumCPU())
+	events  = make(chan Event, runtime.NumCPU()*100)
 	version string
 )
 
