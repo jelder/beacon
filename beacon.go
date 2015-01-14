@@ -214,9 +214,6 @@ func newPool(server, password string) *redis.Pool {
 }
 
 func main() {
-	if version == "" {
-		version = "dev"
-	}
 	log.Print("Beacon " + version + " running on " + fmt.Sprintf("%d", runtime.NumCPU()) + "CPUs")
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
