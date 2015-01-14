@@ -136,6 +136,7 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 
 	apiResponse := TrackJson{Visits: visits, Uniques: uniques}
 	js, _ := json.Marshal(apiResponse)
+	w.Header().Set("Server", "Beacon "+version)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
