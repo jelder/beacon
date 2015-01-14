@@ -14,7 +14,7 @@ var url = "//beacon.herokuapp.com/" + objectId + ".png";
 image.src = url;
 ```
 
-See the results at https://beacon.herokuapp.com/api/post_1234, which supports CORS.
+See the results at https://beacon.herokuapp.com/api/v1/post_1234, which supports CORS.
 
 ```json
 {
@@ -29,7 +29,13 @@ You can migrate your existing visits and uniques from another platform by POSTin
 
 ![&nbsp](https://beacon.herokuapp.com/beacon_github_repo.png)
 
-There is an invisible image above this line, though GitHub's Markdown may mess with it. See the traffic we've tracked so far here: https://beacon.herokuapp.com/api/beacon_github_repo
+There is an invisible image above this line, though GitHub's Markdown [proxies and anonymizes everything](https://help.github.com/articles/why-do-my-images-have-strange-urls/).
+
+```html
+<img src="https://beacon.herokuapp.com/beacon_github_repo.png"/>
+```
+
+See the traffic we've tracked so far here: https://beacon.herokuapp.com/api/v1/beacon_github_repo
 
 ## Thanks
 

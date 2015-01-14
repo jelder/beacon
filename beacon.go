@@ -231,8 +231,8 @@ func main() {
 		http.Redirect(w, req, "https://www.github.com/jelder/beacon", 302)
 	})
 	r.HandleFunc("/{objectId}.png", beaconHandler)
-	r.HandleFunc("/api/{objectId}", apiHandler).Methods("GET")
-	r.HandleFunc("/api/{objectId}", apiWriteHandler).Methods("POST").Queries("key", os.Getenv("SECRET_KEY"))
+	r.HandleFunc("/api/v1/{objectId}", apiHandler).Methods("GET")
+	r.HandleFunc("/api/v1/{objectId}", apiWriteHandler).Methods("POST").Queries("key", os.Getenv("SECRET_KEY"))
 
 	n := negroni.Classic()
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
