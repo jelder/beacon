@@ -7,7 +7,8 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 
 ```javascript
 var image = new Image(1,1);
-url = "//beacon.herokuapp.com/beacon.png?id=" + "myTrackingId" 
+objectId = 1234
+url = "//beacon.herokuapp.com/" + objectId + ".png"
 image.src = url;
 ```
 
@@ -25,7 +26,7 @@ You can migrate your existing visits and uniques from another platform by POSTin
 
 ## Demo
 
-![&nbsp](https://beacon.herokuapp.com/beacon.png?id=beacon_github_repo)
+![&nbsp](https://beacon.herokuapp.com/beacon_github_repo.png)
 
 There is an invisible image above this line, though GitHub's Markdown may mess with it. See the traffic we've tracked so far here: https://beacon.herokuapp.com/api/beacon_github_repo
 

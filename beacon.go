@@ -215,11 +215,13 @@ func main() {
 	log.Print("Connecting to Redis on ", redisServer, redisPassword)
 	pool = newPool(redisServer, redisPassword)
 
+	go track()
+
 	r := mux.NewRouter()
 	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		http.Redirect(w, req, "https://www.github.com/jelder/beacon", 302)
 	})
-	r.HandleFunc("/beacon.png", beaconHandler)
+	r.HandleFunc("/{objectId}.png", beaconHandler)
 	r.HandleFunc("/api/{objectId}", apiHandler).Methods("GET")
 	r.HandleFunc("/api/{objectId}", apiWriteHandler).Methods("POST").Queries("key", os.Getenv("SECRET_KEY"))
 
