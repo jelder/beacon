@@ -14,6 +14,7 @@
   "env": {
     "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-go",
     "REDIS_PROVIDER": "REDISCLOUD_URL",
+    "GO_GIT_DESCRIBE_SYMBOL": "main.version",
     "SECRET_KEY": {
       "description": "A lazy shared secret hack. This is a required parameter for all mutating requests.",
       "generator": "secret"
