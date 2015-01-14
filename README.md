@@ -5,6 +5,8 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
+### API
+
 ```javascript
 var objectId = "post_" + 1234;
 var image = new Image(1,1);
@@ -12,7 +14,6 @@ var url = "//beacon.herokuapp.com/" + objectId + ".png";
 image.src = url;
 ```
 
-### API
 See the results at https://beacon.herokuapp.com/api/post_1234, which supports CORS.
 
 ```json
