@@ -22,10 +22,11 @@ import (
 const cookieMaxAge = 60 * 60 * 60 * 24 * 30
 
 var (
-	redisPool = redisSetup(redisConfig())
-	png       = mustReadFile("assets/beacon.png")
-	events    = make(chan Event, runtime.NumCPU()*100)
-	version   string
+	redisPool    = redisSetup(redisConfig())
+	beacon_png   = mustReadFile("assets/beacon.png")
+	multi_script = redis.NewScript(-1, fmt.Sprintf("%s", mustReadFile("assets/multi.lua")))
+	events       = make(chan Event, runtime.NumCPU()*100)
+	version      string
 )
 
 func mustReadFile(path string) []byte {
@@ -103,7 +104,7 @@ func beaconHandler(w http.ResponseWriter, req *http.Request) {
 	objectId := vars["objectId"]
 	events <- Event{objectId, uid(w, req)}
 	w.Header().Set("Content-Type", "image/png")
-	w.Write(png)
+	w.Write(beacon_png)
 }
 
 func apiHandler(w http.ResponseWriter, req *http.Request) {
@@ -141,6 +142,28 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(js)
 }
 
+func apiMultiHandler(w http.ResponseWriter, req *http.Request) {
+	conn := redisPool.Get()
+	defer conn.Close()
+
+	// TODO read from POST body
+	keys := make([]string, 2)
+	keys[0] = "foo"
+	keys[1] = "bar"
+	fmt.Printf("%q\n", keys)
+
+	visits, err := redis.Int64(multi_script.Do(conn, "foo", "bar"))
+	if err != nil {
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	apiResponse := TrackJson{Visits: visits, Uniques: 1}
+	js, _ := json.Marshal(apiResponse)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	objectId := vars["objectId"]
@@ -154,7 +177,6 @@ func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
 	_, err := conn.Do("MSET", "uniques_"+objectId, trackJson.Uniques, "visits_"+objectId, trackJson.Visits)
 	if err != nil {
 		log.Print(err)
-
 	}
 }
 
@@ -225,6 +247,7 @@ func main() {
 	})
 	r.HandleFunc("/{objectId}.png", beaconHandler)
 	r.HandleFunc("/api/v1/{objectId}", apiHandler).Methods("GET")
+	r.HandleFunc("/api/v1/_multi", apiMultiHandler).Methods("POST")
 	r.HandleFunc("/api/v1/{objectId}", apiWriteHandler).Methods("POST").Queries("key", os.Getenv("SECRET_KEY"))
 
 	n := negroni.Classic()
