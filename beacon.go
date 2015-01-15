@@ -22,10 +22,10 @@ import (
 const cookieMaxAge = 60 * 60 * 60 * 24 * 30
 
 var (
-	pool    *redis.Pool
-	png     = mustReadFile("assets/beacon.png")
-	events  = make(chan Event, runtime.NumCPU()*100)
-	version string
+	redisPool = redisSetup(redisConfig())
+	png       = mustReadFile("assets/beacon.png")
+	events    = make(chan Event, runtime.NumCPU()*100)
+	version   string
 )
 
 func mustReadFile(path string) []byte {
@@ -73,7 +73,7 @@ func uid(w http.ResponseWriter, req *http.Request) string {
 }
 
 func track() {
-	conn := pool.Get()
+	conn := redisPool.Get()
 	defer conn.Close()
 
 	for {
@@ -109,7 +109,7 @@ func beaconHandler(w http.ResponseWriter, req *http.Request) {
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	objectId := vars["objectId"]
-	conn := pool.Get()
+	conn := redisPool.Get()
 	defer conn.Close()
 
 	uniques, err := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectId))
@@ -149,7 +149,7 @@ func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	fmt.Sprintf("%q\n", trackJson)
-	conn := pool.Get()
+	conn := redisPool.Get()
 	defer conn.Close()
 	_, err := conn.Do("MSET", "uniques_"+objectId, trackJson.Uniques, "visits_"+objectId, trackJson.Visits)
 	if err != nil {
@@ -185,11 +185,11 @@ func redisConfig() (string, string) {
 		return url.Host, password
 	} else {
 		return "127.0.0.1:6379", ""
-
 	}
 }
 
-func newPool(server, password string) *redis.Pool {
+func redisSetup(server, password string) *redis.Pool {
+	log.Print("Connecting to Redis on ", server, password)
 	return &redis.Pool{
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,
@@ -215,12 +215,7 @@ func newPool(server, password string) *redis.Pool {
 
 func main() {
 	log.Print("Beacon " + version + " running on " + fmt.Sprintf("%d", runtime.NumCPU()) + "CPUs")
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	redisServer, redisPassword := redisConfig()
-	log.Print("Connecting to Redis on ", redisServer, redisPassword)
-	pool = newPool(redisServer, redisPassword)
 
 	go track()
 
