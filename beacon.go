@@ -136,7 +136,7 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 	uniques += migrated_uniques
 
 	apiResponse := TrackJson{Visits: visits, Uniques: uniques}
-	js, _ := json.Marshal(apiResponse)
+	js, _ := json.MarshalIndent(apiResponse, "", "  ")
 	w.Header().Set("Server", "Beacon "+version)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
@@ -145,23 +145,33 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 func apiMultiHandler(w http.ResponseWriter, req *http.Request) {
 	conn := redisPool.Get()
 	defer conn.Close()
+	body, _ := ioutil.ReadAll(req.Body)
+	fmt.Printf("%s\n", body)
 
 	// TODO read from POST body
-	keys := make([]string, 2)
-	keys[0] = "foo"
-	keys[1] = "bar"
-	fmt.Printf("%q\n", keys)
+	test := []string{"foo", "bar", "baz", "blah"}
 
-	visits, err := redis.Int64(multi_script.Do(conn, "foo", "bar"))
+	keys := variadicScriptArgs(test)
+	visits, err := redis.Int64(multi_script.Do(conn, keys...))
 	if err != nil {
 		log.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// TODO also query unique
 	apiResponse := TrackJson{Visits: visits, Uniques: 1}
-	js, _ := json.Marshal(apiResponse)
+	js, _ := json.MarshalIndent(apiResponse, "", "  ")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func variadicScriptArgs(args []string) []interface{} {
+	scriptArgs := make([]interface{}, len(args)+1)
+	scriptArgs[0] = len(args) // First argument is length
+	for i, v := range args {
+		scriptArgs[i+1] = interface{}(v)
+	}
+	return scriptArgs
 }
 
 func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
@@ -249,6 +259,8 @@ func main() {
 	r.HandleFunc("/api/v1/{objectId}", apiHandler).Methods("GET")
 	r.HandleFunc("/api/v1/_multi", apiMultiHandler).Methods("POST")
 	r.HandleFunc("/api/v1/{objectId}", apiWriteHandler).Methods("POST").Queries("key", os.Getenv("SECRET_KEY"))
+
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./assets/")))
 
 	n := negroni.Classic()
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
