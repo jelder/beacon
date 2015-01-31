@@ -1,4 +1,4 @@
-package beacon_test
+package main_test
 
 import (
 	. "github.com/jelder/beacon"
@@ -9,5 +9,5 @@ import (
 
 func TestEnv(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Env Suite")
+	RunSpecs(t, "Beacon Suite")
 }
