@@ -1,8 +1,13 @@
-package main
+package beacon_test
 
 import (
+	. "github.com/jelder/beacon"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"testing"
 )
 
-func Test(t *testing.T) {
+func TestEnv(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Env Suite")
 }
