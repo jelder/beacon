@@ -29,6 +29,36 @@ type Event struct {
 	User   string
 }
 
+func (event *Event) Track(conn redis.Conn) {
+	fmt.Print("Tracking ", event.User, " on ", event.Object)
+
+	// http://godoc.org/github.com/garyburd/redigo/redis#hdr-Pipelining
+	conn.Send("MULTI")
+
+	// Track the number of unique visitors in a HyperLogLog
+	// http://redis.io/commands/pfadd
+	conn.Send("PFADD", "hll_"+event.Object, event.User)
+
+	// Track the total number of visits in a simple key (stringy)
+	// http://redis.io/commands/incr
+	conn.Send("INCR", "hits_"+event.Object)
+
+	_, err := conn.Do("EXEC")
+	if err != nil {
+		fmt.Print(err)
+	}
+}
+
+func Tracker() {
+	conn := redisPool.Get()
+	defer conn.Close()
+
+	for {
+		event := <-events
+		event.Track(conn)
+	}
+}
+
 func init() {
 	redisPool = redisSetup(redisConfig())
 	events = make(chan Event, runtime.NumCPU()*100)
@@ -38,7 +68,7 @@ func main() {
 	fmt.Println("Beacon running on", fmt.Sprintf("%d", runtime.NumCPU()), "CPUs")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	go track()
+	go Tracker()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
@@ -84,30 +114,4 @@ func uid(w http.ResponseWriter, req *http.Request) string {
 		}
 	}
 	return cookie.Value
-}
-
-func track() {
-	conn := redisPool.Get()
-	defer conn.Close()
-
-	for {
-		event := <-events
-		fmt.Print("Tracking ", event.User, " on ", event.Object)
-
-		// http://godoc.org/github.com/garyburd/redigo/redis#hdr-Pipelining
-		conn.Send("MULTI")
-
-		// Track the number of unique visitors in a HyperLogLog
-		// http://redis.io/commands/pfadd
-		conn.Send("PFADD", "hll_"+event.Object, event.User)
-
-		// Track the total number of visits in a simple key (stringy)
-		// http://redis.io/commands/incr
-		conn.Send("INCR", "str_"+event.Object)
-
-		_, err := conn.Do("EXEC")
-		if err != nil {
-			fmt.Print(err)
-		}
-	}
 }

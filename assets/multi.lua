@@ -1,8 +1,17 @@
-local sum = 0
+local visits = 0
+local uniques = 0
+
 for _, key in pairs (KEYS) do
-  local val = redis.pcall("GET", key)
+  local val = redis.pcall("GET", "hits_" .. key)
   if val then
-    sum = sum + tonumber(val)
+    visits = visits + tonumber(val)
   end
 end
-return sum
+
+local hll_keys = {}
+for _, key in pairs (KEYS) do
+  	table.insert(hll_keys, "hll_" .. key)
+end
+uniques = redis.pcall("PFCOUNT", unpack(hll_keys))
+
+return {visits, uniques}

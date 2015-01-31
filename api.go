@@ -6,7 +6,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 	"github.com/mholt/binding"
-	"io/ioutil"
+	// "io/ioutil"
 	"net/http"
 )
 
@@ -36,7 +36,7 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	var migrated_visits, migrated_uniques, visits int64
-	mget, err := redis.Values(conn.Do("MGET", "visits_"+objectId, "uniques_"+objectId, "str_"+objectId))
+	mget, err := redis.Values(conn.Do("MGET", "visits_"+objectId, "uniques_"+objectId, "hits_"+objectId))
 	if err != nil {
 		fmt.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,26 +57,38 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func apiMultiHandler(w http.ResponseWriter, req *http.Request) {
-	conn := redisPool.Get()
-	defer conn.Close()
-	body, _ := ioutil.ReadAll(req.Body)
-	fmt.Printf("%s\n", body)
+	req.ParseForm()
 
-	// TODO read from POST body
-	test := []string{"foo", "bar", "baz", "blah"}
+	if len(req.Form["id"]) < 1 {
+		http.Error(w, "Must pass id parameter (at least once)", http.StatusBadRequest)
+		return
+	}
 
-	keys := variadicScriptArgs(test)
-	visits, err := redis.Int64(multi_script.Do(conn, keys...))
+	response, err := GetMulti(req.Form["id"])
 	if err != nil {
 		fmt.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// TODO also query unique
-	apiResponse := TrackJson{Visits: visits, Uniques: 1}
-	js, _ := json.MarshalIndent(apiResponse, "", "  ")
+
+	js, _ := json.MarshalIndent(response, "", "  ")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func GetMulti(ids []string) (tj TrackJson, err error) {
+	conn := redisPool.Get()
+	defer conn.Close()
+
+	script_args := redis.Args{}.Add(len(ids)).AddFlat(ids)
+	// var visits, uniques int64
+	script_result, err := redis.Scan(multi_script.Do(conn, script_args...), &tj.Visits, &tj.Uniques)
+	if err != nil {
+		return tj, err
+	}
+	fmt.Println("%q\n", script_result)
+
+	return tj, err
 }
 
 func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
