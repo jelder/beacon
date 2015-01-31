@@ -82,12 +82,14 @@ func GetMulti(ids []string) (tj TrackJson, err error) {
 
 	script_args := redis.Args{}.Add(len(ids)).AddFlat(ids)
 	// var visits, uniques int64
-	script_result, err := redis.Scan(multi_script.Do(conn, script_args...), &tj.Visits, &tj.Uniques)
+	script_result, err := redis.Values(multi_script.Do(conn, script_args...))
 	if err != nil {
 		return tj, err
 	}
-	fmt.Println("%q\n", script_result)
-
+	_, err = redis.Scan(script_result, &tj.Visits, &tj.Uniques)
+	if err != nil {
+		return tj, err
+	}
 	return tj, err
 }
 
