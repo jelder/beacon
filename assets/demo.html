@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang=en-us>
+<head>
+  <meta charset=utf-8>
+  <title>Beacon Demo</title>
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <h2>Requesting Multiple Objects at Once</h2>
+  <pre><code class="language-javascript">
+var request = new XMLHttpRequest();
+request.open('POST', '/api/v1/_multi', true);
+request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+
+request.onload = function() {
+  if (request.status >= 200 && request.status < 400) {
+    var resp = JSON.parse(request.responseText);
+    document.getElementById('visits').textContent = resp.visits;
+    document.getElementById('uniques').textContent = resp.uniques;
+  } else {
+    console.log(request.responseText)
+  }
+};
+request.send("foo,bar,baz");
+  </code></pre>
+  <table class="table table-condensed table-hover">
+    <tbody>
+      <tr>
+        <th scope="row">Visits</th>
+        <td id="visits"></td>
+      </tr>
+      <tr>
+        <th scope="row">Uniques</th>
+        <td id="uniques"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<img src="/foo.png">
+<img src="/bar.png">
+<img src="/baz.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.js"></script>
+<script>
+var request = new XMLHttpRequest();
+request.open('POST', '/api/v1/_multi', true);
+request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+
+request.onload = function() {
+  if (request.status >= 200 && request.status < 400) {
+    var resp = JSON.parse(request.responseText);
+    document.getElementById('visits').textContent = resp.visits;
+    document.getElementById('uniques').textContent = resp.uniques;
+  } else {
+    console.log(request.responseText)
+  }
+};
+
+request.onerror = function() {
+  console.log(request.responseText)
+};
+
+request.send("foo,bar,baz");
+</script>
+</body>
+</html>
