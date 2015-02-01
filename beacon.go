@@ -30,8 +30,6 @@ type Event struct {
 }
 
 func (event *Event) Track(conn redis.Conn) {
-	fmt.Print("Tracking ", event.User, " on ", event.Object)
-
 	// http://godoc.org/github.com/garyburd/redigo/redis#hdr-Pipelining
 	conn.Send("MULTI")
 

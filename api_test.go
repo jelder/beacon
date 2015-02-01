@@ -20,31 +20,40 @@ func resetRedis() {
 	conn.Do("FLUSHALL")
 }
 
-var _ = Describe("Book", func() {
-	AfterEach(resetRedis)
-	BeforeEach(func() {
-		conn := RedisPool.Get()
-		defer conn.Close()
+func trackSomeEvents() {
+	conn := RedisPool.Get()
+	defer conn.Close()
+	events := []Event{
+		Event{Object: "foo", User: "jelder"},
+		Event{Object: "foo", User: "cmbt"},
+		Event{Object: "bar", User: "jelder"},
+		Event{Object: "bar", User: "cmbt"},
+	}
 
-		object := "foo"
-		user := "jelder"
-		for i := 0; i < 10; i++ {
-			conn.Send("PFADD", "hll_"+object, user)
-			conn.Send("INCR", "hits_"+object)
+	for i := 0; i < 10; i++ {
+		for _, event := range events {
+			event.Track(conn)
 		}
-	})
+	}
+}
 
-	Describe("Reading multiple objects at once", func() {
+var _ = Describe("API", func() {
+	BeforeEach(trackSomeEvents)
+	AfterEach(resetRedis)
+
+	Describe("api/v1/_multi", func() {
 		var result TrackJson
+
 		BeforeEach(func() {
-			result, _ = GetMulti([]string{"foo"})
+			result, _ = GetMulti([]string{"foo", "bar"})
 		})
 
-		It("should find one unique", func() {
-			Expect(result.Uniques).To(Equal(int64(1)))
+		It("should find our uniques", func() {
+			Expect(result.Uniques).To(Equal(int64(2)))
 		})
-		It("should find ten visits", func() {
-			Expect(result.Visits).To(Equal(int64(10)))
+
+		It("should find our visits", func() {
+			Expect(result.Visits).To(Equal(int64(40)))
 		})
 	})
 })
