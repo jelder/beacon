@@ -18,7 +18,7 @@ const (
 )
 
 var (
-	redisPool    *redis.Pool
+	RedisPool    *redis.Pool
 	events       chan Event
 	multi_script = redis.NewScript(-1, fmt.Sprintf("%s", mustReadFile("assets/multi.lua")))
 	beacon_png   = mustReadFile("assets/beacon.png")
@@ -50,7 +50,7 @@ func (event *Event) Track(conn redis.Conn) {
 }
 
 func Tracker() {
-	conn := redisPool.Get()
+	conn := RedisPool.Get()
 	defer conn.Close()
 
 	for {
@@ -60,7 +60,7 @@ func Tracker() {
 }
 
 func init() {
-	redisPool = redisSetup(redisConfig())
+	RedisPool = redisSetup(redisConfig())
 	events = make(chan Event, runtime.NumCPU()*100)
 }
 

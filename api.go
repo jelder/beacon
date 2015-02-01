@@ -25,7 +25,7 @@ func (trackJson *TrackJson) FieldMap() binding.FieldMap {
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	objectId := vars["objectId"]
-	conn := redisPool.Get()
+	conn := RedisPool.Get()
 	defer conn.Close()
 
 	uniques, err := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectId))
@@ -77,7 +77,7 @@ func apiMultiHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func GetMulti(ids []string) (tj TrackJson, err error) {
-	conn := redisPool.Get()
+	conn := RedisPool.Get()
 	defer conn.Close()
 
 	script_args := redis.Args{}.Add(len(ids)).AddFlat(ids)
@@ -101,7 +101,7 @@ func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	fmt.Sprintf("%q\n", trackJson)
-	conn := redisPool.Get()
+	conn := RedisPool.Get()
 	defer conn.Close()
 	_, err := conn.Do("MSET", "uniques_"+objectId, trackJson.Uniques, "visits_"+objectId, trackJson.Visits)
 	if err != nil {
