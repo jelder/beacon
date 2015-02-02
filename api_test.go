@@ -42,7 +42,7 @@ var _ = Describe("API", func() {
 	AfterEach(resetRedis)
 
 	Describe("api/v1/_multi", func() {
-		var result TrackJson
+		var result TrackJSON
 
 		BeforeEach(func() {
 			result, _ = GetMulti([]string{"foo", "bar"})

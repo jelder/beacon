@@ -19,11 +19,11 @@ func listenAddress() string {
 }
 
 func redisConfig() (string, string) {
-	redis_provider := ENV["REDIS_PROVIDER"]
-	if redis_provider == "" {
-		redis_provider = "OPENREDIS_URL"
+	redisProvider := ENV["REDIS_PROVIDER"]
+	if redisProvider == "" {
+		redisProvider = "OPENREDIS_URL"
 	}
-	string := ENV[redis_provider]
+	string := ENV[redisProvider]
 	if string != "" {
 		url, err := neturl.Parse(string)
 		password := ""
@@ -34,9 +34,8 @@ func redisConfig() (string, string) {
 			password, _ = url.User.Password()
 		}
 		return url.Host, password
-	} else {
-		return "127.0.0.1:6379", ""
 	}
+	return "127.0.0.1:6379", ""
 }
 
 func redisSetup(server, password string) *redis.Pool {

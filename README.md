@@ -10,9 +10,9 @@ Beacon provides the familiar 1x1 transparent PNG web tracking image, but on your
 ### API
 
 ```javascript
-var objectId = "post_" + 1234;
+var objectID = "post_" + 1234;
 var image = new Image(1,1);
-var url = "//beacon.herokuapp.com/" + objectId + ".png";
+var url = "//beacon.herokuapp.com/" + objectID + ".png";
 image.src = url;
 ```
 

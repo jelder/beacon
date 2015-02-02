@@ -18,10 +18,10 @@ const (
 )
 
 var (
-	RedisPool    *redis.Pool
-	events       chan Event
-	multi_script = redis.NewScript(-1, fmt.Sprintf("%s", mustReadFile("assets/multi.lua")))
-	beacon_png   = mustReadFile("assets/beacon.png")
+	RedisPool   *redis.Pool
+	events      chan Event
+	multiScript = redis.NewScript(-1, fmt.Sprintf("%s", mustReadFile("assets/multi.lua")))
+	beaconPng   = mustReadFile("assets/beacon.png")
 )
 
 type Event struct {
@@ -72,10 +72,10 @@ func main() {
 	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		http.Redirect(w, req, "https://www.github.com/jelder/beacon", 302)
 	})
-	r.HandleFunc("/{objectId}.png", beaconHandler)
-	r.HandleFunc("/api/v1/{objectId}", apiHandler).Methods("GET")
+	r.HandleFunc("/{objectID}.png", beaconHandler)
+	r.HandleFunc("/api/v1/{objectID}", apiHandler).Methods("GET")
 	r.HandleFunc("/api/v1/_multi", apiMultiHandler).Methods("POST")
-	r.HandleFunc("/api/v1/{objectId}", apiWriteHandler).Methods("POST").Queries("key", ENV["SECRET_KEY"])
+	r.HandleFunc("/api/v1/{objectID}", apiWriteHandler).Methods("POST").Queries("key", ENV["SECRET_KEY"])
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./assets/")))
 
@@ -90,10 +90,10 @@ func main() {
 
 func beaconHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	objectId := vars["objectId"]
-	events <- Event{objectId, uid(w, req)}
+	objectID := vars["objectID"]
+	events <- Event{objectID, uid(w, req)}
 	w.Header().Set("Content-Type", "image/png")
-	w.Write(beacon_png)
+	w.Write(beaconPng)
 }
 
 func uid(w http.ResponseWriter, req *http.Request) string {
@@ -103,9 +103,9 @@ func uid(w http.ResponseWriter, req *http.Request) string {
 		case http.ErrNoCookie:
 			uid := fmt.Sprintf("%s", uniuri.New())
 			now := time.Now()
-			new_cookie := &http.Cookie{Name: "uid", Value: uid, MaxAge: cookieMaxAge, Expires: now.Add(cookieMaxAge)}
-			fmt.Print("Setting new cookie ", new_cookie)
-			http.SetCookie(w, new_cookie)
+			newCookie := &http.Cookie{Name: "uid", Value: uid, MaxAge: cookieMaxAge, Expires: now.Add(cookieMaxAge)}
+			fmt.Print("Setting new cookie ", newCookie)
+			http.SetCookie(w, newCookie)
 			return uid
 		default:
 			fmt.Println(err)

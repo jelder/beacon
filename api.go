@@ -10,47 +10,47 @@ import (
 	"net/http"
 )
 
-type TrackJson struct {
+type TrackJSON struct {
 	Visits  int64 `json:"visits"`
 	Uniques int64 `json:"uniques"`
 }
 
-func (trackJson *TrackJson) FieldMap() binding.FieldMap {
+func (TrackJSON *TrackJSON) FieldMap() binding.FieldMap {
 	return binding.FieldMap{
-		&trackJson.Visits:  "visits",
-		&trackJson.Uniques: "uniques",
+		&TrackJSON.Visits:  "visits",
+		&TrackJSON.Uniques: "uniques",
 	}
 }
 
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	objectId := vars["objectId"]
+	objectID := vars["objectID"]
 	conn := RedisPool.Get()
 	defer conn.Close()
 
-	uniques, err := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectId))
+	uniques, err := redis.Int64(conn.Do("PFCOUNT", "hll_"+objectID))
 	if err != nil {
 		fmt.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	var migrated_visits, migrated_uniques, visits int64
-	mget, err := redis.Values(conn.Do("MGET", "visits_"+objectId, "uniques_"+objectId, "hits_"+objectId))
+	var migratedVisits, migratedUniques, visits int64
+	mget, err := redis.Values(conn.Do("MGET", "visits_"+objectID, "uniques_"+objectID, "hits_"+objectID))
 	if err != nil {
 		fmt.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if _, err := redis.Scan(mget, &migrated_visits, &migrated_uniques, &visits); err != nil {
+	if _, err := redis.Scan(mget, &migratedVisits, &migratedUniques, &visits); err != nil {
 		fmt.Print(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	visits += migrated_visits
-	uniques += migrated_uniques
+	visits += migratedVisits
+	uniques += migratedUniques
 
-	apiResponse := TrackJson{Visits: visits, Uniques: uniques}
+	apiResponse := TrackJSON{Visits: visits, Uniques: uniques}
 	js, _ := json.MarshalIndent(apiResponse, "", "  ")
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
@@ -76,17 +76,17 @@ func apiMultiHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(js)
 }
 
-func GetMulti(ids []string) (tj TrackJson, err error) {
+func GetMulti(ids []string) (tj TrackJSON, err error) {
 	conn := RedisPool.Get()
 	defer conn.Close()
 
-	script_args := redis.Args{}.Add(len(ids)).AddFlat(ids)
+	scriptArgs := redis.Args{}.Add(len(ids)).AddFlat(ids)
 	// var visits, uniques int64
-	script_result, err := redis.Values(multi_script.Do(conn, script_args...))
+	scriptResult, err := redis.Values(multiScript.Do(conn, scriptArgs...))
 	if err != nil {
 		return tj, err
 	}
-	_, err = redis.Scan(script_result, &tj.Visits, &tj.Uniques)
+	_, err = redis.Scan(scriptResult, &tj.Visits, &tj.Uniques)
 	if err != nil {
 		return tj, err
 	}
@@ -95,15 +95,15 @@ func GetMulti(ids []string) (tj TrackJson, err error) {
 
 func apiWriteHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	objectId := vars["objectId"]
-	trackJson := new(TrackJson)
-	if binding.Bind(req, trackJson).Handle(w) {
+	objectID := vars["objectID"]
+	TrackJSON := new(TrackJSON)
+	if binding.Bind(req, TrackJSON).Handle(w) {
 		return
 	}
-	fmt.Sprintf("%q\n", trackJson)
+	fmt.Sprintf("%q\n", TrackJSON)
 	conn := RedisPool.Get()
 	defer conn.Close()
-	_, err := conn.Do("MSET", "uniques_"+objectId, trackJson.Uniques, "visits_"+objectId, trackJson.Visits)
+	_, err := conn.Do("MSET", "uniques_"+objectID, TrackJSON.Uniques, "visits_"+objectID, TrackJSON.Visits)
 	if err != nil {
 		fmt.Print(err)
 	}
