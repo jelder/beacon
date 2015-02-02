@@ -24,10 +24,10 @@ func trackSomeEvents() {
 	conn := RedisPool.Get()
 	defer conn.Close()
 	events := []Event{
-		Event{Object: "foo", User: "jelder"},
-		Event{Object: "foo", User: "cmbt"},
-		Event{Object: "bar", User: "jelder"},
-		Event{Object: "bar", User: "cmbt"},
+		{Object: "foo", User: "jelder"},
+		{Object: "foo", User: "cmbt"},
+		{Object: "bar", User: "jelder"},
+		{Object: "bar", User: "cmbt"},
 	}
 
 	for i := 0; i < 10; i++ {
